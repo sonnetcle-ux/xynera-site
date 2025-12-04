@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xynera Fashion | Official Online Store</title>
+    <!-- Load Tailwind CSS via CDN - Necessary for Elementor HTML widget integration -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font family -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate-900 */
+            color: #f8fafc; /* Slate-50 */
+        }
+        /* Custom scroll behavior for navigation */
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+        /* Custom styles for pink accents */
+        .text-fuchsia { color: #EC4899; }
+        .border-fuchsia { border-color: #EC4899; }
+
+        /* Shopping Cart Styles */
+        #shopping-cart {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+        #shopping-cart.open {
+            transform: translateX(0);
+        }
+        /* Overlay backdrop */
+        .cart-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 49; /* Below header, above content */
+        }
+    </style>
+</head>
+<body class="scroll-smooth">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm shadow-lg border-b border-fuchsia/20">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+            
+            <!-- LEFT SIDE: Logo and Category Links -->
+            <div class="flex items-center space-x-8">
+                <!-- Logo: Xynera Fashion -->
+                <a href="#home" class="flex items-center space-x-2 text-2xl font-bold text-white transition duration-300">
+                    <img src="https://storage.googleapis.com/assistants-files/Xynera%20Fashion-01.jpg" 
+                         alt="Xynera Fashion Logo" 
+                         class="h-10 w-auto object-contain">
+                    <span class="text-pink-400 hover:text-pink-300 hidden sm:inline">Xynera Fashion</span>
+                </a>
+
+                <!-- E-commerce Navigation Links (Desktop) -->
+                <div class="hidden lg:flex space-x-4">
+                    <a href="#home" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2 font-semibold">HOME</a>
+                    <a href="#men" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2">MEN</a>
+                    <a href="#women" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2">WOMEN</a>
+                    <a href="#kids" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2">KIDS</a>
+                    <a href="#accessories" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2">ACCESSORIES</a>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: Cart, Checkout, and Mobile Menu Button -->
+            <div class="flex items-center space-x-4">
+                <!-- Cart Utility: ADD TO CART icon/link -->
+                <button id="cart-link" class="text-slate-300 hover:text-pink-400 transition duration-300 rounded-md p-2 flex items-center space-x-1 relative" aria-label="View Cart">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span id="cart-item-count" class="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full opacity-0 transition duration-300">0</span>
+                    <span class="hidden sm:inline-block font-medium">CART</span>
+                </button>
+                
+                <!-- Checkout Total Value in BDT -->
+                <span class="bg-green-500 px-3 py-1 text-sm font-bold rounded-full shadow-md text-white">
+                    ৳ <span id="cart-total-value">0.00</span> BDT
+                </span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- SHOPPING CART DRAWER (Checkout Option) -->
+    <div id="cart-overlay" class="cart-overlay hidden fixed inset-0 z-40"></div>
+    <div id="shopping-cart" class="fixed top-0 right-0 w-full sm:w-96 h-full bg-slate-800 shadow-2xl z-50 flex flex-col">
+        <div class="p-5 border-b border-fuchsia/20 flex justify-between items-center bg-slate-900">
+            <h2 class="text-2xl font-bold text-pink-400">Your Shopping Cart</h2>
+            <button id="close-cart-btn" class="text-slate-300 hover:text-pink-400 transition duration-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Cart Items List -->
+        <div id="cart-items-container" class="flex-grow overflow-y-auto p-5 space-y-4">
+            <!-- Items will be injected here by JavaScript -->
+            <p id="empty-cart-message" class="text-slate-400 text-center py-10">Your cart is currently empty. Start shopping!</p>
+        </div>
+
+        <!-- Cart Footer / Totals / Checkout Button -->
+        <div class="p-5 border-t border-fuchsia/20 bg-slate-900">
+            <div class="flex justify-between items-center text-xl font-bold mb-4">
+                <span class="text-white">Subtotal:</span>
+                <span class="text-pink-400">৳ <span id="cart-subtotal-display">0.00</span> BDT</span>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm text-slate-400 mb-4">
+                <span>Shipping:</span>
+                <span>Calculated at Checkout</span>
+            </div>
+
+            <button id="checkout-btn" class="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg shadow-xl hover:bg-green-500 transition duration-300 disabled:opacity-50" disabled>
+                Proceed to Checkout
+            </button>
+            <p id="checkout-message" class="text-center text-green-400 mt-2 hidden">Thank you! Checkout simulated successfully.</p>
+        </div>
+    </div>
+    
+    <!-- Main Content Sections -->
+    <main>
+        <!-- Hero Section (HOME) -->
+        <section id="home" class="relative overflow-hidden pt-20 pb-20 md:pt-32 md:pb-40 text-center bg-slate-900 min-h-screen flex items-center">
+            <!-- Background Gradient Effect -->
+            <div class="absolute inset-0 z-0 opacity-20">
+                <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <defs>
+                        <radialGradient id="a" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#EC4899"/> 
+                            <stop offset="100%" stop-color="#0f172a"/>
+                        </radialGradient>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#a)"/>
+                </svg>
+            </div>
+
+            <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+                <p class="text-xl text-pink-400 font-semibold mb-4 tracking-widest uppercase">New Arrivals & Limited Stock</p>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+                    Style that Speaks <span class="text-pink-400">Your Language</span>
+                </h1>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10">
+                    Discover the latest trends in Men's, Women's, and Kids' fashion. Exclusive designs, unmatched quality.
+                </p>
+                <a href="#women" class="inline-block px-10 py-4 bg-pink-600 text-white font-bold text-lg rounded-full shadow-lg hover:bg-pink-500 transition duration-300 transform hover:scale-105">
+                    Shop Women's Collection &rarr;
+                </a>
+            </div>
+        </section>
+
+        <!-- Product Collection Section: MEN -->
+        <section id="men" class="py-16 md:py-24 bg-slate-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl font-bold text-center mb-4 text-pink-400">MEN'S COLLECTION</h2>
+                <p class="text-center text-xl text-slate-400 mb-12">Sophisticated style and rugged essentials for the modern man.</p>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Men's Product Card 1 -->
+                    <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Men's+Shirt" alt="Men's Casual Shirt" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Casual Linen Shirt</h4>
+                        <p class="text-sm text-slate-400 mb-3">Summer Essential</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 1850 BDT</span>
+                            <button data-product-id="m001" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Men's Product Card 2 -->
+                    <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Men's+Jeans" alt="Men's Slim Fit Jeans" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Slim Fit Denim</h4>
+                        <p class="text-sm text-slate-400 mb-3">Midnight Wash</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 2400 BDT</span>
+                            <button data-product-id="m002" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Men's Product Card 3 -->
+                    <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Men's+Watch" alt="Men's Watch" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Chronograph Watch</h4>
+                        <p class="text-sm text-slate-400 mb-3">Accessories</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 4800 BDT</span>
+                            <button data-product-id="m003" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Men's Product Card 4 -->
+                    <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Men's+Polo" alt="Men's Polo Shirt" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Performance Polo</h4>
+                        <p class="text-sm text-slate-400 mb-3">Athleisure</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 1500 BDT</span>
+                            <button data-product-id="m004" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Collection Section: WOMEN -->
+        <section id="women" class="py-16 md:py-24 bg-slate-900 border-t border-fuchsia/20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl font-bold text-center mb-4 text-pink-400">WOMEN'S COLLECTION</h2>
+                <p class="text-center text-xl text-slate-400 mb-12">Elegant styles and trendsetting pieces for every occasion.</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Women's Product Card 1 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Women's+Dress" alt="Women's Maxi Dress" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Floral Maxi Dress</h4>
+                        <p class="text-sm text-slate-400 mb-3">Casual Wear</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 3100 BDT</span>
+                            <button data-product-id="w001" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Women's Product Card 2 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Women's+Trousers" alt="Women's Trousers" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">High-Waist Trousers</h4>
+                        <p class="text-sm text-slate-400 mb-3">Office Wear</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 1950 BDT</span>
+                            <button data-product-id="w002" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Women's Product Card 3 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Women's+Heels" alt="Women's Heels" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Stiletto Heels</h4>
+                        <p class="text-sm text-slate-400 mb-3">Footwear</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 2990 BDT</span>
+                            <button data-product-id="w003" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Women's Product Card 4 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Women's+Jewelry" alt="Women's Jewelry" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Delicate Necklace</h4>
+                        <p class="text-sm text-slate-400 mb-3">Jewelry</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 950 BDT</span>
+                            <button data-product-id="w004" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Collection Section: KIDS (Updated with Subsections) -->
+        <section id="kids" class="py-16 md:py-24 bg-slate-800 border-t border-fuchsia/20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl font-bold text-center mb-4 text-pink-400">KIDS' COLLECTION</h2>
+                <p class="text-center text-xl text-slate-400 mb-12">Fun, durable, and comfortable clothing for children of all ages.</p>
+
+                <!-- BOYS SUBSECTION -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-white mb-8 border-b-2 border-slate-600 pb-2">BOYS' APPAREL</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Boys' Product Card 1 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Boys'+Tee" alt="Boys' Dinosaur T-Shirt" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Dinosaur Graphic Tee</h4>
+                            <p class="text-sm text-slate-400 mb-3">Ages 4-8</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 750 BDT</span>
+                                <button data-product-id="b001" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Boys' Product Card 2 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Boys'+Shorts" alt="Boys' Cargo Shorts" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Adventure Cargo Shorts</h4>
+                            <p class="text-sm text-slate-400 mb-3">Utility Wear</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 990 BDT</span>
+                                <button data-product-id="b002" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Boys' Product Card 3 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Boys'+Hoodie" alt="Boys' Hoodie" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Zip-Up Fleece Hoodie</h4>
+                            <p class="text-sm text-slate-400 mb-3">Outerwear</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 1400 BDT</span>
+                            <button data-product-id="b003" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Boys' Product Card 4 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Boys'+Sneaker" alt="Boys' Running Sneaker" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Blue Runner Sneakers</h4>
+                            <p class="text-sm text-slate-400 mb-3">Footwear</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 1350 BDT</span>
+                                <button data-product-id="b004" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GIRLS SUBSECTION -->
+                <div>
+                    <h3 class="text-3xl font-bold text-white mb-8 border-b-2 border-slate-600 pb-2">GIRLS' APPAREL</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Girls' Product Card 1 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Girls'+Dress" alt="Girls' Tutu Dress" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Sparkle Tutu Dress</h4>
+                            <p class="text-sm text-slate-400 mb-3">Party & Play</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 1800 BDT</span>
+                                <button data-product-id="g001" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Girls' Product Card 2 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Girls'+Legging" alt="Girls' Printed Leggings" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Floral Pattern Leggings</h4>
+                            <p class="text-sm text-slate-400 mb-3">Comfort Fit</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 650 BDT</span>
+                                <button data-product-id="g002" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Girls' Product Card 3 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Girls'+Sandals" alt="Girls' Sandals" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Glitter Summer Sandals</h4>
+                            <p class="text-sm text-slate-400 mb-3">Footwear</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 1100 BDT</span>
+                                <button data-product-id="g003" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                        <!-- Girls' Product Card 4 -->
+                        <div class="bg-slate-700 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                            <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Girls'+Shirt" alt="Girls' Blouse" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-1">Ruffled Cotton Blouse</h4>
+                            <p class="text-sm text-slate-400 mb-3">Casual Chic</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-400">৳ 890 BDT</span>
+                                <button data-product-id="g004" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Product Collection Section: ACCESSORIES -->
+        <section id="accessories" class="py-16 md:py-24 bg-slate-900 border-t border-fuchsia/20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl font-bold text-center mb-4 text-pink-400">ACCESSORIES</h2>
+                <p class="text-center text-xl text-slate-400 mb-12">The perfect finishing touches to complete your Xynera Fashion look.</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Accessories Product Card 1 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Leather+Bag" alt="Leather Tote Bag" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Premium Leather Tote</h4>
+                        <p class="text-sm text-slate-400 mb-3">Handbags</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 3500 BDT</span>
+                            <button data-product-id="a001" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Accessories Product Card 2 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Sunglasses" alt="Designer Sunglasses" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Oversized Sunglasses</h4>
+                        <p class="text-sm text-slate-400 mb-3">Eyewear</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 1450 BDT</span>
+                            <button data-product-id="a002" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Accessories Product Card 3 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Wallet" alt="Men's Wallet" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Bi-Fold Leather Wallet</h4>
+                        <p class="text-sm text-slate-400 mb-3">Men's Essentials</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 990 BDT</span>
+                            <button data-product-id="a003" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                    <!-- Accessories Product Card 4 -->
+                    <div class="bg-slate-800 p-4 rounded-xl shadow-lg hover:shadow-pink-500/50 transition duration-300 transform hover:-translate-y-1">
+                        <img src="https://placehold.co/400x500/1e293b/f8fafc?text=Scarf" alt="Italian Silk Scarf" class="w-full h-48 sm:h-64 object-cover mb-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-1">Italian Silk Scarf</h4>
+                        <p class="text-sm text-slate-400 mb-3">Luxury Item</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-pink-400">৳ 1750 BDT</span>
+                            <button data-product-id="a004" class="add-to-cart-btn px-3 py-1 bg-pink-600 text-white text-sm rounded-full hover:bg-pink-500 transition duration-300">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter / Contact Section -->
+        <section id="contact" class="py-16 md:py-24 bg-slate-800 border-t border-fuchsia/20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl">
+                <h2 class="text-4xl font-bold text-center mb-4 text-white">Join the Xynera Family</h2>
+                <p class="text-center text-xl text-slate-400 mb-12">Sign up for our newsletter to get 10% off your first order and exclusive access to new launches.</p>
+
+                <form class="space-y-6 bg-slate-700 p-8 rounded-xl shadow-2xl">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
+                        <input type="email" id="email" name="email" required class="w-full px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white focus:ring-pink-500 focus:border-pink-500 transition duration-200" placeholder="your@email.com">
+                    </div>
+                    <button type="submit" class="w-full px-6 py-3 bg-pink-600 text-white font-bold rounded-lg shadow-lg hover:bg-pink-500 transition duration-300 transform hover:scale-[1.01]">
+                        Subscribe Now
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 py-8 border-t border-fuchsia/20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400">
+            <p class="mb-2">&copy; <span id="current-year-footer"></span> Xynera Fashion. All rights reserved.</p>
+            <div class="space-x-4 text-sm">
+                <a href="#" class="hover:text-pink-400 transition duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-pink-400 transition duration-300">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set the current year in the footer
+        document.getElementById('current-year-footer').textContent = new Date().getFullYear();
+
+        // --- E-COMMERCE LOGIC ---
+
+        // 1. Product Data Store
+        const PRODUCTS = [
+            // Men
+            { id: 'm001', name: 'Casual Linen Shirt', price: 1850.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Shirt' },
+            { id: 'm002', name: 'Slim Fit Denim', price: 2400.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Jeans' },
+            { id: 'm003', name: 'Chronograph Watch', price: 4800.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Watch' },
+            { id: 'm004', name: 'Performance Polo', price: 1500.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Polo' },
+            // Women
+            { id: 'w001', name: 'Floral Maxi Dress', price: 3100.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Dress' },
+            { id: 'w002', name: 'High-Waist Trousers', price: 1950.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Trousers' },
+            { id: 'w003', name: 'Stiletto Heels', price: 2990.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Heels' },
+            { id: 'w004', name: 'Delicate Necklace', price: 950.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Jewelry' },
+            // Boys
+            { id: 'b001', name: 'Dinosaur Graphic Tee', price: 750.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Dino+Tee' },
+            { id: 'b002', name: 'Adventure Cargo Shorts', price: 990.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Shorts' },
+            { id: 'b003', name: 'Zip-Up Fleece Hoodie', price: 1400.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Hoodie' },
+            { id: 'b004', name: 'Blue Runner Sneakers', price: 1350.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Sneaker' },
+            // Girls
+            { id: 'g001', name: 'Sparkle Tutu Dress', price: 1800.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Tutu' },
+            { id: 'g002', name: 'Floral Pattern Leggings', price: 650.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Legging' },
+            { id: 'g003', name: 'Glitter Summer Sandals', price: 1100.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Sandals' },
+            { id: 'g004', name: 'Ruffled Cotton Blouse', price: 890.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Blouse' },
+            // Accessories
+            { id: 'a001', name: 'Premium Leather Tote', price: 3500.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Tote' },
+            { id: 'a002', name: 'Oversized Sunglasses', price: 1450.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Shades' },
+            { id: 'a003', name: 'Bi-Fold Leather Wallet', price: 990.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Wallet' },
+            { id: 'a004', name: 'Italian Silk Scarf', price: 1750.00, img: 'https://placehold.co/100x120/1e293b/f8fafc?text=Scarf' },
+        ];
+
+        let cart = []; // Stores objects like: { productId: 'm001', quantity: 2, price: 1850.00 }
+
+        // 2. DOM Elements
+        const cartDrawer = document.getElementById('shopping-cart');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const cartLink = document.getElementById('cart-link');
+        const closeCartBtn = document.getElementById('close-cart-btn');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartTotalValueHeader = document.getElementById('cart-total-value');
+        const cartSubtotalDisplay = document.getElementById('cart-subtotal-display');
+        const cartItemCountBadge = document.getElementById('cart-item-count');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const checkoutMessage = document.getElementById('checkout-message');
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+
+        // 3. Core Cart Functions
+        
+        /**
+         * Formats a number as BDT currency string.
+         * @param {number} value 
+         * @returns {string}
+         */
+        function formatCurrency(value) {
+            return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        /**
+         * Calculates the total price and item count in the cart.
+         */
+        function calculateTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            cartSubtotalDisplay.textContent = formatCurrency(subtotal);
+            cartTotalValueHeader.textContent = formatCurrency(subtotal);
+
+            // Update header badge
+            cartItemCountBadge.textContent = totalItems;
+            if (totalItems > 0) {
+                cartItemCountBadge.classList.remove('opacity-0');
+                checkoutBtn.disabled = false;
+            } else {
+                cartItemCountBadge.classList.add('opacity-0');
+                checkoutBtn.disabled = true;
+            }
+        }
+
+        /**
+         * Renders the cart items in the sidebar.
+         */
+        function renderCart() {
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '';
+                emptyCartMessage.classList.remove('hidden');
+                checkoutMessage.classList.add('hidden');
+                calculateTotal();
+                return;
+            }
+
+            emptyCartMessage.classList.add('hidden');
+            checkoutMessage.classList.add('hidden');
+            cartItemsContainer.innerHTML = '';
+
+            cart.forEach(item => {
+                const productInfo = PRODUCTS.find(p => p.id === item.productId);
+                
+                const itemHtml = `
+                    <div class="flex items-center space-x-4 bg-slate-700 p-3 rounded-lg shadow-md">
+                        <img src="${productInfo.img}" alt="${productInfo.name}" class="w-16 h-16 object-cover rounded-md">
+                        <div class="flex-grow">
+                            <h5 class="text-white font-semibold">${productInfo.name}</h5>
+                            <p class="text-pink-400 text-sm">৳ ${formatCurrency(item.price)} each</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button data-id="${item.productId}" data-action="decrease" class="cart-quantity-btn w-6 h-6 bg-slate-600 rounded-full hover:bg-slate-500 transition duration-150">-</button>
+                            <span class="text-white font-medium w-4 text-center">${item.quantity}</span>
+                            <button data-id="${item.productId}" data-action="increase" class="cart-quantity-btn w-6 h-6 bg-slate-600 rounded-full hover:bg-slate-500 transition duration-150">+</button>
+                        </div>
+                        <button data-id="${item.productId}" data-action="remove" class="remove-item-btn text-red-400 hover:text-red-500 ml-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                `;
+                cartItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            // Re-attach listeners for dynamically generated buttons
+            document.querySelectorAll('.cart-quantity-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuantityChange);
+            });
+            document.querySelectorAll('.remove-item-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuantityChange);
+            });
+
+            calculateTotal();
+        }
+
+        /**
+         * Adds a product to the cart or increments its quantity.
+         * @param {string} productId 
+         */
+        function addToCart(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.productId === productId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
+            renderCart();
+            // Open cart drawer after adding an item for immediate feedback
+            openCart(); 
+        }
+
+        /**
+         * Handles quantity changes (increase, decrease, remove).
+         * @param {Event} event 
+         */
+        function handleQuantityChange(event) {
+            const button = event.currentTarget;
+            const productId = button.dataset.id;
+            const action = button.dataset.action;
+            const itemIndex = cart.findIndex(item => item.productId === productId);
+
+            if (itemIndex === -1) return;
+
+            if (action === 'increase') {
+                cart[itemIndex].quantity += 1;
+            } else if (action === 'decrease') {
+                cart[itemIndex].quantity -= 1;
+            } else if (action === 'remove') {
+                cart[itemIndex].quantity = 0; // Set to 0 to trigger removal logic below
+            }
+
+            // Remove item if quantity drops to 0 or below
+            if (cart[itemIndex].quantity <= 0) {
+                cart.splice(itemIndex, 1);
+            }
+            
+            renderCart();
+        }
+
+        // 4. Cart UI Functions (Open/Close)
+
+        function openCart() {
+            cartDrawer.classList.add('open');
+            cartOverlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Prevent scrolling body
+        }
+
+        function closeCart() {
+            cartDrawer.classList.remove('open');
+            cartOverlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // 5. Event Listeners
+
+        // Toggle Cart Button
+        cartLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            cartDrawer.classList.contains('open') ? closeCart() : openCart();
+        });
+
+        // Close Cart Button
+        closeCartBtn.addEventListener('click', closeCart);
+        cartOverlay.addEventListener('click', closeCart); // Close when clicking overlay
+
+        // Add to Cart buttons
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const productId = event.currentTarget.dataset.productId;
+                addToCart(productId);
+            });
+        });
+
+        // Checkout Button Handler
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length === 0) return;
+            
+            // Simulation: Clear cart and show confirmation message
+            cart = [];
+            renderCart(); // Re-render to show empty state
+            
+            checkoutMessage.textContent = `Order placed! Total paid: ৳ ${cartTotalValueHeader.textContent} BDT. Your order will ship shortly.`;
+            checkoutMessage.classList.remove('hidden');
+            
+            // Keep cart open briefly to show success message, then close
+            setTimeout(closeCart, 3000); 
+        });
+
+        // Initial render on load
+        renderCart(); 
+
+    </script>
